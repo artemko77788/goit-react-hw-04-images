@@ -1,7 +1,7 @@
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Searchbar from 'components/Searchbar';
 import { ToastContainer } from 'react-toastify';
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from 'components/Modal';
 import s from './App.module.css';
 
@@ -9,81 +9,73 @@ import FetchImages from '../../service/api';
 import Loader from 'components/Loader';
 import PropTypes from 'prop-types';
 
-class App extends Component {
-  state = {
-    imagesArr: [],
-    seach: '',
-    page: 1,
-    error: null,
-    showModal: false,
-    modalData: [],
-    status: 'idle',
-  };
+function App() {
+  const [imagesArr, setImageArr] = useState([]);
+  const [seach, setSeach] = useState('');
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalData, setModalData] = useState([]);
+  const [status, setStatus] = useState('idle');
 
-  componentDidUpdate(prevProps, prevState) {
-    const { seach, page, imagesArr } = this.state;
-
-    if (prevState.seach !== seach || prevState.page !== page) {
-      this.setState({ status: 'pending' });
-      FetchImages(seach, page)
-        .then(data =>
-          this.setState({ imagesArr: [...imagesArr, data], status: 'resolved' })
-        )
-        .catch(error => {
-          this.setState({ error: error, status: 'rejected' });
-        });
+  useEffect(() => {
+    if (seach === '') {
+      return;
     }
-  }
-  togleModal = data => {
+    setStatus({ status: 'pending' });
+    FetchImages(seach, page)
+      .then(data => setImageArr(prev => [...prev, data]), setStatus('resolved'))
+      .catch(error => {
+        setError(error);
+        setStatus('rejected');
+      });
+  }, [page, seach]);
+
+  const togleModal = data => {
     if (data !== undefined) {
-      this.setState({ modalData: data });
+      setModalData(data);
     }
-
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
+    setShowModal(!showModal);
   };
 
-  hendlerFormSubmit = data => {
-    this.setState({ seach: data, imagesArr: [], page: 1 });
+  const hendlerFormSubmit = data => {
+    setSeach(data);
+    setImageArr([]);
+    setPage(1);
   };
 
-  handleClickBtn = e => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
+  const handleClickBtn = e => {
+    setPage(p => p + 1);
   };
 
-  render() {
-    const { imagesArr, error, status, modalData, showModal } = this.state;
+  return (
+    <>
+      {showModal && (
+        <Modal onClose={togleModal}>
+          <img src={modalData[0]} alt={modalData[1]} />
+        </Modal>
+      )}
+      <div className={s.app}>
+        <ToastContainer autoClose={1500} />
 
-    return (
-      <>
-        {showModal && (
-          <Modal onClose={this.togleModal}>
-            <img src={modalData[0]} alt={modalData[1]} />
-          </Modal>
+        <Searchbar hendlerForm={hendlerFormSubmit} />
+
+        {status === 'pending' && <Loader />}
+
+        {status === 'rejected' && (
+          <p className={s.error}>No such images: {error.message}</p>
         )}
-        <div className={s.app}>
-          <ToastContainer autoClose={1500} />
 
-          <Searchbar hendlerForm={this.hendlerFormSubmit} />
-
-          {status === 'pending' && <Loader />}
-
-          {status === 'rejected' && (
-            <p className={s.error}>No such images: {error.message}</p>
-          )}
-
-          {(status === 'resolved' || imagesArr.length !== 0) && (
-            <ImageGallery
-              imagesArr={imagesArr}
-              togl={this.togleModal}
-              click={this.handleClickBtn}
-            />
-          )}
-        </div>
-      </>
-    );
-  }
+        {(status === 'resolved' || imagesArr.length !== 0) && (
+          <ImageGallery
+            imagesArr={imagesArr}
+            togl={togleModal}
+            click={handleClickBtn}
+          />
+        )}
+      </div>
+    </>
+  );
 }
 
 Modal.propType = {
