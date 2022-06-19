@@ -3,13 +3,15 @@ import ImageGalleryItem from 'components/ImageGallery/ImageGalleryItem';
 import PropTypes from 'prop-types';
 import Button from 'components/Button';
 
-const ImageGallery = ({ imagesArr, togl, click }) => {
+const ImageGallery = ({ imagesArr, toggle, click }) => {
   return (
     <>
       <ul className={s.ImageGallery}>
         {imagesArr.map(element => {
           return element.map(hits => {
-            return <ImageGalleryItem item={hits} key={hits.id} togl={togl} />;
+            return (
+              <ImageGalleryItem item={hits} key={hits.id} toggle={toggle} />
+            );
           });
         })}
       </ul>

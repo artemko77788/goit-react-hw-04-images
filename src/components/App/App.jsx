@@ -31,7 +31,7 @@ function App() {
       });
   }, [page, seach]);
 
-  const togleModal = data => {
+  const toggleModal = data => {
     if (data !== undefined) {
       setModalData(data);
     }
@@ -51,7 +51,7 @@ function App() {
   return (
     <>
       {showModal && (
-        <Modal onClose={togleModal}>
+        <Modal onClose={toggleModal}>
           <img src={modalData[0]} alt={modalData[1]} />
         </Modal>
       )}
@@ -69,7 +69,7 @@ function App() {
         {(status === 'resolved' || imagesArr.length !== 0) && (
           <ImageGallery
             imagesArr={imagesArr}
-            togl={togleModal}
+            toggle={toggleModal}
             click={handleClickBtn}
           />
         )}
