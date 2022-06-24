@@ -22,17 +22,22 @@ function App() {
     if (seach === '') {
       return;
     }
-    setStatus({ status: 'pending' });
-    FetchImages(seach, page)
-      .then(data => setImageArr(prev => [...prev, data]), setStatus('resolved'))
-      .catch(error => {
-        setError(error);
+    async function getImg() {
+      setStatus({ status: 'pending' });
+      try {
+        const data = await FetchImages(seach, page);
+        setImageArr(prev => [...prev, data], setStatus('resolved'));
+      } catch (err) {
+        setError(err);
         setStatus('rejected');
-      });
+      }
+    }
+
+    getImg();
   }, [page, seach]);
 
   const toggleModal = data => {
-    if (data !== undefined) {
+    if (data) {
       setModalData(data);
     }
     setShowModal(!showModal);
